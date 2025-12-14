@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.20" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="MySql.Data" Version="9.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.20" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="DTOs\" />
+    <None Remove="Models\" />
+    <None Remove="Repositories\" />
+    <None Remove="Repositories\Interfaces\" />
+    <None Remove="Repositories\ADONET\" />
+    <None Remove="Services\" />
+    <None Remove="Services\Interfaces\" />
+    <None Remove="Helpers\" />
+    <None Remove="Middleware\" />
+    <None Remove="Utilities\" />
+    <None Remove="Models\wwwroot\" />
+    <None Remove="Models\wwwroot\Images\" />
+    <None Remove="Models\wwwroot\Images\products\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DTOs\" />
+    <Folder Include="Models\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\Interfaces\" />
+    <Folder Include="Repositories\ADONET\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\Interfaces\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Middleware\" />
+    <Folder Include="Utilities\" />
+    <Folder Include="Models\wwwroot\" />
+    <Folder Include="Models\wwwroot\Images\" />
+    <Folder Include="Models\wwwroot\Images\products\" />
+  </ItemGroup>
+</Project>
