@@ -21,6 +21,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromBody] AuthDTOs.RegisterDto dto)
     {
+        var role = "buyer";
         using var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(1) FROM users WHERE email=@email;";
@@ -28,13 +29,13 @@ public class AuthController : ControllerBase
         var exists = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
         if (exists) return BadRequest("Email already registered");
 
-        cmd.CommandText = "INSERT INTO users (name,email,password_hash,role) VALUES(@name,@email,@hash,@role); SELECT LAST_INSERT_ID();";
+        cmd.CommandText = "INSERT INTO users (name,email,password_hash,role) VALUES(@name,@email,@hash,@role); SELECT SCOPE_IDENTITY();";
         var pn = cmd.CreateParameter(); pn.ParameterName = "@name"; pn.Value = dto.Name; cmd.Parameters.Add(pn);
         var ph = cmd.CreateParameter(); ph.ParameterName = "@hash"; ph.Value = PasswordHasher.Hash(dto.Password); cmd.Parameters.Add(ph);
-        var pr = cmd.CreateParameter(); pr.ParameterName = "@role"; pr.Value = "buyer"; cmd.Parameters.Add(pr);
+        var pr = cmd.CreateParameter(); pr.ParameterName = "@role"; pr.Value = role; cmd.Parameters.Add(pr);
         var id = Convert.ToInt32(cmd.ExecuteScalar());
-        var token = _jwt.GenerateToken(id, "buyer");
-        var userDto = new AuthDTOs.UserDto(id, dto.Name, dto.Email);
+        var token = _jwt.GenerateToken(id, role);
+        var userDto = new AuthDTOs.UserDto(id, dto.Name, dto.Email, role);
         return Ok(new AuthDTOs.AuthResponse(token, 120, userDto));
     }
 
@@ -43,16 +44,17 @@ public class AuthController : ControllerBase
     {
         using var conn = _db.GetConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, password_hash, role FROM users WHERE email=@email LIMIT 1;";
+        cmd.CommandText = "SELECT TOP 1 id, name, password_hash, role FROM users WHERE email=@email;";
         var pe = cmd.CreateParameter(); pe.ParameterName = "@email"; pe.Value = dto.Email; cmd.Parameters.Add(pe);
         using var r = cmd.ExecuteReader();
         if (!r.Read()) return Unauthorized("Invalid credentials");
         var id = Convert.ToInt32(r["id"]);
         var hash = r["password_hash"].ToString();
         var role = r["role"].ToString();
+        var name = r["name"].ToString();
         if (!PasswordHasher.Verify(dto.Password, hash)) return Unauthorized("Invalid credentials");
         var token = _jwt.GenerateToken(id, role);
-        var userDto = new AuthDTOs.UserDto(id, dto.Name, dto.Email);
+        var userDto = new AuthDTOs.UserDto(id, name, dto.Email, role);
         return Ok(new AuthDTOs.AuthResponse(token, 120, userDto));
     }
 }

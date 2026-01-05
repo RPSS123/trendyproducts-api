@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Text.Json;
 using TrendKart.API.Repositories.ADONET;
 using TrendyProducts.Helpers;
@@ -31,11 +32,16 @@ builder.Services.AddSingleton<DbHelper>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<AdminOrderRepository>();
 
 // Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 
 // JWT helper (simple wrapper)
 builder.Services.AddSingleton<JwtService>();
@@ -47,8 +53,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000")   // React dev
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // if you use cookies; otherwise omit
+              .AllowAnyHeader();
     });
 });
 
@@ -63,8 +68,9 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors("DevCors");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

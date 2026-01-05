@@ -20,8 +20,28 @@ namespace TrendyProducts.Repositories.ADONET
             cmd.CommandText = @"
                 INSERT INTO cart_items (user_id, product_id, quantity)
                 VALUES (@userId, @productId, @qty)
-                ON DUPLICATE KEY UPDATE quantity = quantity + @qty;
-                SELECT LAST_INSERT_ID();";
+                IF EXISTS (
+    SELECT 1 FROM cart_items
+    WHERE user_id = @userId AND product_id = @productId
+)
+BEGIN
+    UPDATE cart_items
+    SET quantity = quantity + @qty,
+        updated_at = GETDATE()
+    WHERE user_id = @userId AND product_id = @productId;
+
+    SELECT id FROM cart_items
+    WHERE user_id = @userId AND product_id = @productId;
+END
+ELSE
+BEGIN
+    INSERT INTO cart_items (user_id, product_id, quantity)
+    VALUES (@userId, @productId, @qty);
+
+    SELECT CAST(SCOPE_IDENTITY() AS INT);
+END
+;
+               SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
             var pUser = cmd.CreateParameter();
             pUser.ParameterName = "@userId";

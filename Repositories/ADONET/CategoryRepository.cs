@@ -26,6 +26,7 @@ namespace TrendKart.API.Repositories.ADONET
                     Name = r["name"].ToString(),
                     Slug = r["slug"].ToString(),
                     Description = r["description"].ToString(),
+                    ImageUrl = r["image_url"].ToString(),
                     ParentId = r["parent_id"] == DBNull.Value ? null : (int?)Convert.ToInt32(r["parent_id"])
                 });
             }
@@ -36,10 +37,10 @@ namespace TrendKart.API.Repositories.ADONET
         {
             using var conn = _db.GetConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT * FROM categories WHERE id=@id LIMIT 1;";
+            cmd.CommandText = "SELECT TOP 1 * FROM categories WHERE id=@id;";
             var p = cmd.CreateParameter(); p.ParameterName = "@id"; p.Value = id; cmd.Parameters.Add(p);
             using var r = cmd.ExecuteReader();
-            if (r.Read()) return new Category { Id = Convert.ToInt32(r["id"]), Name = r["name"].ToString(), Slug = r["slug"].ToString(), Description = r["description"].ToString() };
+            if (r.Read()) return new Category { Id = Convert.ToInt32(r["id"]), Name = r["name"].ToString(), Slug = r["slug"].ToString(), Description = r["description"].ToString(), ImageUrl = r["image_url"].ToString() };
             return null;
         }
 
@@ -47,10 +48,10 @@ namespace TrendKart.API.Repositories.ADONET
         {
             using var conn = _db.GetConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT * FROM categories WHERE slug=@slug LIMIT 1;";
+            cmd.CommandText = "SELECT TOP 1 * FROM categories WHERE slug=@slug;";
             var p = cmd.CreateParameter(); p.ParameterName = "@slug"; p.Value = slug; cmd.Parameters.Add(p);
             using var r = cmd.ExecuteReader();
-            if (r.Read()) return new Category { Id = Convert.ToInt32(r["id"]), Name = r["name"].ToString(), Slug = r["slug"].ToString(), Description = r["description"].ToString() };
+            if (r.Read()) return new Category { Id = Convert.ToInt32(r["id"]), Name = r["name"].ToString(), Slug = r["slug"].ToString(), Description = r["description"].ToString(), ImageUrl = r["image_url"].ToString() };
             return null;
         }
 
@@ -58,7 +59,7 @@ namespace TrendKart.API.Repositories.ADONET
         {
             using var conn = _db.GetConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "INSERT INTO categories (name,slug,description,parent_id) VALUES(@name,@slug,@desc,@pid); SELECT LAST_INSERT_ID();";
+            cmd.CommandText = "INSERT INTO categories (name,slug,description,parent_id) VALUES(@name,@slug,@desc,@pid); SELECT CAST(SCOPE_IDENTITY() AS INT);";
             var p1 = cmd.CreateParameter(); p1.ParameterName = "@name"; p1.Value = category.Name; cmd.Parameters.Add(p1);
             var p2 = cmd.CreateParameter(); p2.ParameterName = "@slug"; p2.Value = category.Slug; cmd.Parameters.Add(p2);
             var p3 = cmd.CreateParameter(); p3.ParameterName = "@desc"; p3.Value = category.Description ?? (object)DBNull.Value; cmd.Parameters.Add(p3);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TrendyProducts.DTOs;
 using TrendyProducts.Services.Interfaces;
 
@@ -33,6 +34,7 @@ namespace TrendyProducts.Controllers
             return Ok(list);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public IActionResult Create([FromBody] ProductDTOs.ProductCreateDto dto)
         {

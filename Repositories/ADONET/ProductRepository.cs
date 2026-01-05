@@ -1,8 +1,7 @@
 ﻿using System.Data;
-using MySql.Data.MySqlClient;
+using Microsoft.Data.SqlClient;
 using TrendyProducts.Repositories.Interfaces;
 using System.Collections.Generic;
-using System;
 using TrendyProducts.Helpers;
 using TrendyProducts.Models;
 
@@ -27,7 +26,7 @@ namespace TrendyProducts.Repositories.ADONET
                                 JOIN categories c ON p.category_id = c.id
                                 WHERE (@category IS NULL OR c.slug = @category)
                                 ORDER BY CASE WHEN @sort = 'popularity' THEN p.sales_count END DESC, p.id
-                                LIMIT @limit OFFSET @offset;";
+                               OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;";
 
             var pCategory = cmd.CreateParameter(); pCategory.ParameterName = "@category"; pCategory.Value = (object)category ?? DBNull.Value; cmd.Parameters.Add(pCategory);
             var pLimit = cmd.CreateParameter(); pLimit.ParameterName = "@limit"; pLimit.Value = pageSize; cmd.Parameters.Add(pLimit);
@@ -46,7 +45,7 @@ namespace TrendyProducts.Repositories.ADONET
         {
             using var conn = _db.GetConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT * FROM products WHERE id = @id LIMIT 1;";
+            cmd.CommandText = "SELECT TOP 1 * FROM products WHERE id = @id;";
             var p = cmd.CreateParameter(); p.ParameterName = "@id"; p.Value = id; cmd.Parameters.Add(p);
             using var r = cmd.ExecuteReader();
             if (r.Read()) return Map(r);
@@ -57,7 +56,7 @@ namespace TrendyProducts.Repositories.ADONET
         {
             using var conn = _db.GetConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT * FROM products WHERE slug = @slug LIMIT 1;";
+            cmd.CommandText = "SELECT TOP 1 * FROM products WHERE slug = @slug;";
             var p = cmd.CreateParameter(); p.ParameterName = "@slug"; p.Value = slug; cmd.Parameters.Add(p);
             using var r = cmd.ExecuteReader();
             if (r.Read()) return Map(r);
@@ -83,7 +82,7 @@ namespace TrendyProducts.Repositories.ADONET
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"INSERT INTO products (title,slug,description,brand,price,currency,image_url,category_id,stock,sales_count,rating)
                                 VALUES (@title,@slug,@description,@brand,@price,@currency,@image_url,@category_id,@stock,@sales_count,@rating);
-                                SELECT LAST_INSERT_ID();";
+                                SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
             AddParameters(cmd, product);
             var id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -157,8 +156,7 @@ namespace TrendyProducts.Repositories.ADONET
            OR slug        LIKE @term
            OR description LIKE @term
         ORDER BY sales_count DESC
-        LIMIT @limit OFFSET @offset;
-    ";
+        OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;";
 
             var termParam = cmd.CreateParameter();
             termParam.ParameterName = "@term";
