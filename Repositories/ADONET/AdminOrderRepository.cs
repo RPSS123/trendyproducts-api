@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Dapper;
+using System.Data;
 using TrendyProducts.DTOs;
 using TrendyProducts.Helpers;
 
@@ -41,11 +42,13 @@ namespace TrendyProducts.Repositories.ADONET
 
         public void UpdateOrderStatus(int orderId, string status)
         {
-            _db.Execute(
+            var command = new CommandDefinition(
                 "sp_UpdateOrderStatus",
                 new { OrderId = orderId, Status = status },
                 commandType: CommandType.StoredProcedure
             );
+
+            _db.Execute(command);
         }
     }
 

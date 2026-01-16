@@ -30,10 +30,16 @@ namespace TrendyProducts.Helpers
             return conn.ExecuteScalar<T>(sql, param);
         }
 
-        public int Execute(string sql, object param = null)
+        public int Execute(CommandDefinition command)
         {
-            using var conn = GetConnection();
-            return conn.Execute(sql, param);
+            using var connection = GetConnection();
+            return connection.Execute(command);
+        }
+
+        public int Execute(string sql, object param)
+        {
+            using var con = GetConnection();
+            return con.Execute(sql, param);
         }
 
         public IEnumerable<T> Query<T>(
